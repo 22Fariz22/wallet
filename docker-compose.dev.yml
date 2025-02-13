@@ -1,3 +1,5 @@
+version: "3.8"
+
 services:
   web:
     container_name: api
@@ -14,7 +16,7 @@ services:
     volumes:
       - ./:/app
     env_file:
-      - .env
+      - config.env
     networks:
       - web_api
 
@@ -33,14 +35,14 @@ services:
     networks:
       - ${POSTGRES_NETWORK}
 
-    redis:
-      image: ${REDIS_IMAGE}
-      container_name: ${REDIS_CONTAINER_NAME}
-      ports:
-        - "${REDIS_PORT}:${REDIS_PORT}"
-      restart: always
-      networks:
-        - ${REDIS_NETWORK}
+  redis:
+    image: ${REDIS_IMAGE}
+    container_name: ${REDIS_CONTAINER_NAME}
+    ports:
+      - "${REDIS_PORT}:${REDIS_PORT}"
+    restart: always
+    networks:
+      - ${REDIS_NETWORK}
 
 networks:
   web_api:

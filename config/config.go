@@ -63,21 +63,21 @@ type PostgresConfig struct {
 }
 
 type RedisConfig struct {
-	Addr             string
-	Password         string
-	DB               int
-	DefaultDB        int
-	MinIdleConns     int
-	PoolSize         int
-	PoolTimeout      time.Duration
-	SongTextCasheTTL time.Duration
+	Addr                 string
+	Password             string
+	DB                   int
+	DefaultDB            int
+	MinIdleConns         int
+	PoolSize             int
+	PoolTimeout          time.Duration
+	WalletAmountCasheTTL time.Duration
 }
 
 // LoadConfig reads environment variables into a Config struct
 func LoadConfig() (*Config, error) {
-	// Load .env file
+	// Load config.env file
 	if err := godotenv.Load(); err != nil {
-		log.Println("No .env file found. Falling back to environment variables.")
+		log.Println("No config.env file found. Falling back to environment variables.")
 	}
 
 	return &Config{
@@ -113,19 +113,19 @@ func LoadConfig() (*Config, error) {
 			PostgresqlPort:     getEnv("POSTGRES_PORT", "5432"),
 			PostgresqlUser:     getEnv("POSTGRES_USER", "postgres"),
 			PostgresqlPassword: getEnv("POSTGRES_PASSWORD", "postgres"),
-			PostgresqlDbname:   getEnv("POSTGRES_DBNAME", "music_db"),
+			PostgresqlDbname:   getEnv("POSTGRES_DBNAME", "wallet_db"),
 			PostgresqlSSLMode:  getEnvAsBool("POSTGRES_SSLMODE", false),
 			PgDriver:           getEnv("POSTGRES_DRIVER", "pgx"),
 		},
 		Redis: RedisConfig{
-			Addr:             getEnv("REDIS_ADDR", "redis:6379"),
-			Password:         getEnv("REDIS_PASSWORD", ""),
-			DB:               getEnvAsInt("REDIS_DB", 0),
-			DefaultDB:        getEnvAsInt("REDIS_DEFAULT_DB", 0),
-			MinIdleConns:     getEnvAsInt("REDIS_MIN_IDLE_CONNS", 10),
-			PoolSize:         getEnvAsInt("REDIS_POOL_SIZE", 500),
-			PoolTimeout:      getEnvAsDuration("REDIS_POOL_TIMEOUT", 30*time.Second),
-			SongTextCasheTTL: getEnvAsDuration("SONG_TEXT_CACHE_TTL", 6*time.Hour),
+			Addr:                 getEnv("REDIS_ADDR", "redis:6379"),
+			Password:             getEnv("REDIS_PASSWORD", ""),
+			DB:                   getEnvAsInt("REDIS_DB", 0),
+			DefaultDB:            getEnvAsInt("REDIS_DEFAULT_DB", 0),
+			MinIdleConns:         getEnvAsInt("REDIS_MIN_IDLE_CONNS", 10),
+			PoolSize:             getEnvAsInt("REDIS_POOL_SIZE", 500),
+			PoolTimeout:          getEnvAsDuration("REDIS_POOL_TIMEOUT", 30*time.Second),
+			WalletAmountCasheTTL: getEnvAsDuration("REDIS_WALLET_AMOUNT_CACHE_TTL", 6*time.Hour),
 		},
 	}, nil
 }

@@ -17,5 +17,5 @@ func Migrate(logger logger.Logger, dsn string) error {
 	}
 
 	// Выполнение миграций
-	return db.AutoMigrate(&models.User{}, &models.Wallet{})
+	return db.AutoMigrate(&models.Wallet{})
 }
