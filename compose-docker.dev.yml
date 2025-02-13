@@ -33,6 +33,15 @@ services:
     networks:
       - ${POSTGRES_NETWORK}
 
+    redis:
+      image: ${REDIS_IMAGE}
+      container_name: ${REDIS_CONTAINER_NAME}
+      ports:
+        - "${REDIS_PORT}:${REDIS_PORT}"
+      restart: always
+      networks:
+        - ${REDIS_NETWORK}
+
 networks:
   web_api:
     driver: bridge

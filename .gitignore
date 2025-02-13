@@ -7,6 +7,6 @@ main
 # Output of the go coverage tool, specifically when used with LiteIDE
 *.out
 
-.env
-config.env
+# config.env
+
 pgdata

@@ -1,7 +1,7 @@
-package postgres
+package migrate
 
 import (
-	"github.com/22Fariz22/wallet/internal/model"
+	"github.com/22Fariz22/wallet/internal/models"
 	"github.com/22Fariz22/wallet/pkg/logger"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -17,5 +17,5 @@ func Migrate(logger logger.Logger, dsn string) error {
 	}
 
 	// Выполнение миграций
-	return db.AutoMigrate(&model.User{}, &model.Wallet{})
+	return db.AutoMigrate(&models.User{}, &models.Wallet{})
 }

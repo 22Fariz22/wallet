@@ -3,7 +3,7 @@ package logger
 import (
 	"os"
 
-	"github.com/22Fariz22/forum/config"
+	"github.com/22Fariz22/wallet/config"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )
