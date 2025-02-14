@@ -5,7 +5,7 @@ import (
 )
 
 type Handlers interface {
-	Deposit() echo.HandlerFunc
-	Withdraw() echo.HandlerFunc
+	Operation() echo.HandlerFunc
 	Display() echo.HandlerFunc
+	CreateWallet() echo.HandlerFunc
 }

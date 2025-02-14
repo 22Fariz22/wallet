@@ -76,7 +76,7 @@ type RedisConfig struct {
 // LoadConfig reads environment variables into a Config struct
 func LoadConfig() (*Config, error) {
 	// Load config.env file
-	if err := godotenv.Load(); err != nil {
+	if err := godotenv.Load("config.env"); err != nil {
 		log.Println("No config.env file found. Falling back to environment variables.")
 	}
 

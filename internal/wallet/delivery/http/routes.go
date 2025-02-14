@@ -6,7 +6,7 @@ import (
 )
 
 func MapWalletRoutes(walletGroup *echo.Group, h wallet.Handlers) {
-	walletGroup.GET("/wallets/:uiid", h.Display())
-	walletGroup.POST("/wallet", h.Deposit())
-	walletGroup.POST("/wallet", h.Withdraw())
+	walletGroup.GET("/wallets/:uuid", h.Display())
+	walletGroup.POST("/wallet", h.Operation())
+	walletGroup.POST("/new", h.CreateWallet())
 }
