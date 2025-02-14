@@ -47,8 +47,6 @@ func NewServer(cfg *config.Config, db *sqlx.DB, redisClient *redis.Client, logge
 }
 
 func (s *Server) Run() error {
-	// serverAddr := fmt.Sprintf("%s:%s", s.cfg.Server.BaseUrl, s.cfg.Server.Port)
-
 	server := &http.Server{
 		Addr:           fmt.Sprintf(":%s", s.cfg.Server.Port),
 		ReadTimeout:    time.Second * s.cfg.Server.ReadTimeout,

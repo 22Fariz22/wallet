@@ -1,5 +1,3 @@
-version: "3.8"
-
 services:
   web:
     container_name: api
@@ -40,6 +38,7 @@ services:
     container_name: ${REDIS_CONTAINER_NAME}
     ports:
       - "${REDIS_PORT}:${REDIS_PORT}"
+    command: redis-server --maxmemory 1gb --maxmemory-policy allkeys-lru
     restart: always
     networks:
       - ${REDIS_NETWORK}

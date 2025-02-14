@@ -9,9 +9,10 @@ import (
 )
 
 func (s *Server) MapHandlers(e *echo.Echo) error {
+	s.logger.Info("Registering routes...")
 
 	// Init repositories
-	walletRepo := walletRepository.NewWalletRepository(s.db, s.logger)
+	walletRepo := walletRepository.NewWalletRepository(s.db, s.logger, s.redisClient)
 
 	// Init useCases
 	walletUC := walletUseCase.NewWalletUseCase(s.cfg, walletRepo, s.redisClient, s.logger)
@@ -26,9 +27,10 @@ func (s *Server) MapHandlers(e *echo.Echo) error {
 	}))
 	e.Use(middleware.RequestID())
 
+	s.logger.Debug("API Version:", s.cfg.Middleware.MiddlewareAPIVersion)
 	v1 := e.Group(s.cfg.Middleware.MiddlewareAPIVersion)
 
-	walletGroup := v1.Group("/")
+	walletGroup := v1.Group("")
 
 	walletHTTP.MapWalletRoutes(walletGroup, walletHandler)
 

@@ -38,14 +38,22 @@ func NewWalletUseCase(
 	}
 }
 
-func (u walletUseCase) Display(context context.Context, walletID uuid.UUID) (int64, error) {
-	return 0, nil
+func (u *walletUseCase) Display(ctx context.Context, walletID uuid.UUID) (int64, error) {
+	u.logger.Info("Display usecase called")
+	return u.walletRepo.Display(ctx, walletID)
 }
 
-func (u walletUseCase) Deposit(context context.Context, walletID uuid.UUID, amount int64) error {
-	return nil
+func (u *walletUseCase) Deposit(ctx context.Context, walletID uuid.UUID, amount int64) error {
+	u.logger.Info("Deposit usecase called")
+	return u.walletRepo.Deposit(ctx, walletID, amount)
 }
 
-func (u walletUseCase) Withdraw(context context.Context, walletID uuid.UUID, amount int64) error {
-	return nil
+func (u *walletUseCase) Withdraw(ctx context.Context, walletID uuid.UUID, amount int64) error {
+	u.logger.Info("Withdraw usecase called")
+	return u.walletRepo.Withdraw(ctx, walletID, amount)
+}
+
+func (u *walletUseCase) CreateWallet(ctx context.Context) (uuid.UUID, error) {
+	u.logger.Info("CreateWallet usecase called")
+	return u.walletRepo.CreateWallet(ctx)
 }
