@@ -1,6 +1,7 @@
 package http
 
 import (
+	"log"
 	"net/http"
 
 	"github.com/22Fariz22/wallet/config"
@@ -27,6 +28,7 @@ func NewWalletHandler(
 func (h walletHandlers) Display() echo.HandlerFunc {
 	return func(c echo.Context) error {
 		h.logger.Info("Display handler called")
+		log.Println("Received handler: Display") // Логируем для записи в файл
 
 		ctx := c.Request().Context()
 
@@ -67,6 +69,7 @@ type WalletTransactionRequest struct {
 func (h walletHandlers) Operation() echo.HandlerFunc {
 	return func(c echo.Context) error {
 		h.logger.Info("Operation handler called")
+		log.Println("Received handler: Operation") // Логируем для записи в файл
 
 		ctx := c.Request().Context()
 
@@ -87,15 +90,6 @@ func (h walletHandlers) Operation() echo.HandlerFunc {
 			return c.JSON(http.StatusBadRequest, map[string]string{
 				"error":   "invalid UUID format",
 				"message": "UUID must be in valid format (e.g., 550e8400-e29b-41d4-a716-446655440000)",
-			})
-		}
-
-		// Проверка суммы
-		if req.Amount <= 0 {
-			h.logger.Warn("Invalid amount")
-			return c.JSON(http.StatusBadRequest, map[string]string{
-				"error":   "invalid amount",
-				"message": "amount must be greater than zero",
 			})
 		}
 
