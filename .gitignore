@@ -10,3 +10,4 @@ main
 # config.env
 
 pgdata
+server.log

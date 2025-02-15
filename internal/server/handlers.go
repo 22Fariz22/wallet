@@ -1,6 +1,9 @@
 package server
 
 import (
+	"log"
+	"os"
+
 	walletHTTP "github.com/22Fariz22/wallet/internal/wallet/delivery/http"
 	walletRepository "github.com/22Fariz22/wallet/internal/wallet/repository"
 	walletUseCase "github.com/22Fariz22/wallet/internal/wallet/usecase"
@@ -10,6 +13,13 @@ import (
 
 func (s *Server) MapHandlers(e *echo.Echo) error {
 	s.logger.Info("Registering routes...")
+
+	// открываем файл для подсчета количества записей после нагрузочного тестирования
+	file, err := os.OpenFile("server.log", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
+	if err != nil {
+		log.Fatalf("Failed to open log file: %v", err)
+	}
+	log.SetOutput(file)
 
 	// Init repositories
 	walletRepo := walletRepository.NewWalletRepository(s.db, s.logger, s.redisClient)

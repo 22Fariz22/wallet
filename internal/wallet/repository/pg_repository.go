@@ -2,7 +2,6 @@ package repository
 
 import (
 	"context"
-	"database/sql"
 	"fmt"
 	"strconv"
 	"time"
@@ -31,6 +30,7 @@ func (r *walletRepo) Display(ctx context.Context, walletID uuid.UUID) (int64, er
 	//  Пытаемся получить баланс из Redis
 	balanceStr, err := r.redisClient.Get(ctx, cacheKey).Result()
 	if err == nil {
+		r.logger.Error("error:", err)
 		balance, _ := strconv.ParseInt(balanceStr, 10, 64)
 		return balance, nil
 	}
@@ -39,6 +39,7 @@ func (r *walletRepo) Display(ctx context.Context, walletID uuid.UUID) (int64, er
 	var balance int64
 	err = r.db.GetContext(ctx, &balance, "SELECT amount FROM wallets WHERE wallet_id = $1", walletID)
 	if err != nil {
+		r.logger.Error("error:", err)
 		return 0, err
 	}
 
@@ -50,19 +51,38 @@ func (r *walletRepo) Display(ctx context.Context, walletID uuid.UUID) (int64, er
 
 func (r *walletRepo) Deposit(ctx context.Context, walletID uuid.UUID, amount int64) error {
 	r.logger.Info("Display repo called")
+	r.logger.Infof("Deposit started: walletID=%s, amount=%d", walletID, amount)
+
 	var newBalance int64
 
-	// 1. Обновляем баланс в БД и сразу получаем новое значение
-	err := r.db.GetContext(ctx, &newBalance,
+	tx, err := r.db.BeginTxx(ctx, nil)
+	if err != nil {
+		r.logger.Errorf("Failed to begin transaction: walletID=%s, error=%v", walletID, err)
+		return err
+	}
+	defer tx.Rollback()
+
+	// Обновляем баланс в БД и сразу получаем новое значение
+	err = tx.GetContext(ctx, &newBalance,
 		"UPDATE wallets SET amount = amount + $1 WHERE wallet_id = $2 RETURNING amount",
 		amount, walletID)
 	if err != nil {
-		return err
+		r.logger.Errorf("Failed to update balance: walletID=%s, amount=%d, error=%v", walletID, amount, err)
+		return fmt.Errorf("failed to update balance: %w", err)
 	}
 
-	// 2. Обновляем кэш в Redis
+	// Обновляем кэш в Redis
 	cacheKey := fmt.Sprintf("wallet_balance:%s", walletID)
-	r.redisClient.Set(ctx, cacheKey, newBalance, 10*time.Minute)
+	if err := r.redisClient.Set(ctx, cacheKey, newBalance, 10*time.Minute).Err(); err != nil {
+		r.logger.Warnf("Failed to update Redis cache: walletID=%s, error=%v", walletID, err)
+		// Не прерываем выполнение, так как основная операция уже выполнена
+	}
+
+	// Фиксируем транзакцию
+	if err := tx.Commit(); err != nil {
+		r.logger.Errorf("Failed to commit transaction: walletID=%s, error=%v", walletID, err)
+		return fmt.Errorf("failed to commit transaction: %w", err)
+	}
 
 	r.logger.Infof("Deposit success: wallet %s, new balance: %d", walletID, newBalance)
 	return nil
@@ -71,21 +91,36 @@ func (r *walletRepo) Deposit(ctx context.Context, walletID uuid.UUID, amount int
 func (r *walletRepo) Withdraw(ctx context.Context, walletID uuid.UUID, amount int64) error {
 	var newBalance int64
 
+	// Начинаем транзакцию
+	tx, err := r.db.BeginTxx(ctx, nil)
+	if err != nil {
+		r.logger.Errorf("Failed to begin transaction: %v", err)
+		return err
+	}
+	defer tx.Rollback()
+
 	// Обновляем баланс, но не даем уйти в минус
-	err := r.db.GetContext(ctx, &newBalance,
-		"UPDATE wallets SET amount = amount - $1 WHERE wallet_id = $2 AND amount >= $1 RETURNING amount",
+	err = tx.GetContext(ctx, &newBalance,
+		"UPDATE wallets SET amount = amount - $1 WHERE wallet_id = $2 RETURNING amount",
 		amount, walletID)
 	if err != nil {
-		// Если ошибка из-за нехватки средств (нет RETURNING), возвращаем ошибку
-		if err == sql.ErrNoRows {
-			return fmt.Errorf("insufficient funds")
-		}
+		r.logger.Errorf("Failed to update balance: %v", err)
+
 		return err
 	}
 
 	// Обновляем кэш в Redis
 	cacheKey := fmt.Sprintf("wallet_balance:%s", walletID)
-	r.redisClient.Set(ctx, cacheKey, newBalance, 10*time.Minute)
+	if err := r.redisClient.Set(ctx, cacheKey, newBalance, 10*time.Minute).Err(); err != nil {
+		r.logger.Warnf("Failed to update Redis cache: %v", err)
+		// Не прерываем выполнение, так как основная операция уже выполнена
+	}
+
+	// Фиксируем транзакцию
+	if err := tx.Commit(); err != nil {
+		r.logger.Errorf("Failed to commit transaction: %v", err)
+		return err
+	}
 
 	r.logger.Infof("Withdraw success: wallet %s, new balance: %d", walletID, newBalance)
 	return nil
@@ -102,6 +137,13 @@ func (r *walletRepo) CreateWallet(ctx context.Context) (uuid.UUID, error) {
 	if err != nil {
 		r.logger.Errorf("Failed to create wallet: %v", err)
 		return uuid.UUID{}, err
+	}
+
+	// Обновляем кэш в Redis
+	cacheKey := fmt.Sprintf("wallet_balance:%s", walletID)
+	if err := r.redisClient.Set(ctx, cacheKey, 0, 10*time.Minute).Err(); err != nil {
+		r.logger.Error("error:", err)
+		r.logger.Warnf("Failed to update Redis cache: %v", err)
 	}
 
 	r.logger.Infof("Wallet created successfully: %s", walletID)
