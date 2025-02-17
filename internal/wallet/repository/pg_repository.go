@@ -127,10 +127,10 @@ func (r *walletRepo) Withdraw(ctx context.Context, walletID uuid.UUID, amount in
 }
 
 // CreateWallet создаем новый кошелек с нулевым балансом
-func (r *walletRepo) CreateWallet(ctx context.Context) (uuid.UUID, error) {
+func (r *walletRepo) CreateWallet(ctx context.Context, walletID uuid.UUID) (uuid.UUID, error) {
 	r.logger.Info("CreateWallet repo called")
 
-	walletID := uuid.New()
+	// walletID := uuid.New()
 
 	query := `INSERT INTO wallets (wallet_id, amount) VALUES ($1, 0) RETURNING wallet_id`
 	err := r.db.QueryRowContext(ctx, query, walletID).Scan(&walletID)

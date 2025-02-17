@@ -11,11 +11,17 @@ import (
 
 // App config struct
 type Config struct {
+	API        APIConfig
 	Server     ServerConfig
 	Middleware MiddlewareConfig
 	Postgres   PostgresConfig
 	Logger     Logger
 	Redis      RedisConfig
+}
+
+// API config struct
+type APIConfig struct {
+	APIVersion string
 }
 
 // Server config struct
@@ -81,6 +87,9 @@ func LoadConfig() (*Config, error) {
 	}
 
 	return &Config{
+		API: APIConfig{
+			APIVersion: getEnv("API_VERSION", "/api/v1"),
+		},
 		Server: ServerConfig{
 			AppVersion:        getEnv("APP_VERSION", "1.0.0"),
 			BaseUrl:           getEnv("SERVER_BASE_URL", "localhost"),

@@ -1,7 +1,6 @@
 package http
 
 import (
-	"log"
 	"net/http"
 
 	"github.com/22Fariz22/wallet/config"
@@ -28,7 +27,6 @@ func NewWalletHandler(
 func (h walletHandlers) Display() echo.HandlerFunc {
 	return func(c echo.Context) error {
 		h.logger.Info("Display handler called")
-		log.Println("Received handler: Display") // Логируем для записи в файл
 
 		ctx := c.Request().Context()
 
@@ -69,7 +67,6 @@ type WalletTransactionRequest struct {
 func (h walletHandlers) Operation() echo.HandlerFunc {
 	return func(c echo.Context) error {
 		h.logger.Info("Operation handler called")
-		log.Println("Received handler: Operation") // Логируем для записи в файл
 
 		ctx := c.Request().Context()
 
