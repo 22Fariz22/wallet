@@ -1,1 +1,6 @@
-wallet
+# Wallet
+
+## Local Development Usage
+
+`make up`
+`make down`
