@@ -55,5 +55,6 @@ func (u *walletUseCase) Withdraw(ctx context.Context, walletID uuid.UUID, amount
 
 func (u *walletUseCase) CreateWallet(ctx context.Context) (uuid.UUID, error) {
 	u.logger.Info("CreateWallet usecase called")
-	return u.walletRepo.CreateWallet(ctx)
+	walletID := uuid.New()
+	return u.walletRepo.CreateWallet(ctx, walletID)
 }
